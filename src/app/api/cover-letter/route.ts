@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAIClient } from '@/lib/ai';
+import { getAIClient, getAnthropicClient } from '@/lib/ai';
 import { saveGeneratedDoc } from '@/lib/storage';
 
 export const maxDuration = 60;
@@ -8,9 +8,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { profile, job, openAIKey } = body;
 
-    let client: any, model: string;
+    let client: any, model: string, provider: string;
     try {
-        ({ client, model } = getAIClient({ openAIKey, groqApiKey: profile?.groqApiKey, aiProvider: profile?.aiProvider }));
+        if (profile?.aiProvider === 'anthropic') {
+            ({ client, model, provider } = getAnthropicClient(profile.anthropicApiKey));
+        } else {
+            ({ client, model, provider } = getAIClient({ openAIKey, groqApiKey: profile?.groqApiKey, aiProvider: profile?.aiProvider }));
+        }
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 400 });
     }
@@ -28,8 +32,8 @@ Your writing rules:
 - Mention desire to learn about their future projects and how the candidate can contribute
 - Only include projects that are relevant to THIS role
 - Write as if you are the person themselves, humanly and passionately
-- Maximum 400 words, 1 page format
-- Structure: Opening hook > Why This Company > Experience Narrative > Skills Alignment > Hackathon + Soft Skills > Future Contribution > Strong Close`;
+- STRICT LENGTH LIMIT: MAXIMUM 250 words total. The letter MUST fit easily on a single page printed.
+- Structure: Opening hook > Why This Company > 1 Paragraph Experience/Skills > Strong Close`;
 
     const userPrompt = `CANDIDATE PROFILE:
 Name: ${profile.name}
@@ -51,7 +55,7 @@ ${job.description}
 ---
 
 INSTRUCTIONS:
-Write a 1-page (under 400 words) cover letter for ${profile.name} applying for the ${job.title} role at ${job.company}.
+Write a VERY CONCISE, 1-page (MAXIMUM 250 words) cover letter for ${profile.name} applying for the ${job.title} role at ${job.company}.
 
 Requirements:
 1. Do NOT bold any words. Do NOT use dash-separated lists. Use commas where needed.
@@ -72,23 +76,34 @@ Format:
 Hiring Team,
 ${job.company}
 
-[Letter body - 4-5 paragraphs]
+[Letter body - strictly limited to 3 short paragraphs]
 
 Sincerely,
 ${profile.name}`;
 
     try {
-        const response = await client.chat.completions.create({
-            model,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.7,
-            max_tokens: 1200,
-        });
-
-        const letter = response.choices[0].message.content || '';
+        let letter = '';
+        if (provider === 'anthropic') {
+            const response = await client.messages.create({
+                model,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }],
+                max_tokens: 1200,
+                temperature: 0.7,
+            });
+            letter = response.content[0].text;
+        } else {
+            const response = await client.chat.completions.create({
+                model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 1200,
+            });
+            letter = response.choices[0].message.content || '';
+        }
 
         const timestamp = new Date().toISOString().slice(0, 10);
         const filename = `cover_letter_${job.company.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.txt`;

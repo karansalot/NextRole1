@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAIClient } from '@/lib/ai';
+import { getAIClient, getAnthropicClient } from '@/lib/ai';
 import { saveGeneratedDoc } from '@/lib/storage';
 
 export const maxDuration = 60;
@@ -10,7 +10,11 @@ export async function POST(req: NextRequest) {
 
     let client: any, model: string, provider: string;
     try {
-        ({ client, model, provider } = getAIClient({ openAIKey, groqApiKey: profile?.groqApiKey, aiProvider: profile?.aiProvider }));
+        if (profile?.aiProvider === 'anthropic') {
+            ({ client, model, provider } = getAnthropicClient(profile.anthropicApiKey));
+        } else {
+            ({ client, model, provider } = getAIClient({ openAIKey, groqApiKey: profile?.groqApiKey, aiProvider: profile?.aiProvider }));
+        }
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 400 });
     }
@@ -22,7 +26,7 @@ Key rules:
 - You MAY add 1-2 bullet points to existing roles if it honestly reflects transferable skills
 - You MUST create 1-2 new projects if needed - these can be fictional but realistic, with numbers that are justifiable in interviews
 - ALL metrics must be realistic and defensible: no "increased revenue by 500%" - think like a BA/analyst (e.g., "reduced report generation time by 64%, saving ~22 analyst-hours/week")
-- Output must be EXACTLY 1 page worth of content (aim for 520-560 words total)
+- Output must be STRICTLY 1 page of content (MAXIMUM 500 words). Be concise in bullet points.
 - Must be ATS-friendly: no tables, no columns, no images, no graphics
 - Use strong action verbs and quantified outcomes
 - Optimize for keywords in the job description
@@ -66,7 +70,8 @@ INSTRUCTIONS:
 4. Create 1-2 NEW projects that are highly relevant to THIS specific role (realistic, defensible metrics)
 5. For hackathon wins - highlight them in a way that connects to THIS role's value
 6. Reorder skills to put most relevant ones first
-7. Output format: Plain text resume optimized for ATS, 1 page
+7. Output format: Plain text resume optimized for ATS
+8. STRICT LENGTH: Maximum 500 words. Keep it strictly to 1-page length. Do not ramble.
 
 Output ONLY the resume content in this format:
 [CANDIDATE NAME]
@@ -94,17 +99,29 @@ ACHIEVEMENTS
 [Hackathon wins and other achievements]`;
 
     try {
-        const response = await client.chat.completions.create({
-            model,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.4,
-            max_tokens: 2000,
-        });
+        let resumeText = '';
 
-        const resumeText = response.choices[0].message.content || '';
+        if (provider === 'anthropic') {
+            const response = await client.messages.create({
+                model,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }],
+                max_tokens: 2000,
+                temperature: 0.4,
+            });
+            resumeText = response.content[0].text;
+        } else {
+            const response = await client.chat.completions.create({
+                model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.4,
+                max_tokens: 2000,
+            });
+            resumeText = response.choices[0].message.content || '';
+        }
 
         // Save to disk
         const timestamp = new Date().toISOString().slice(0, 10);

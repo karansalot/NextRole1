@@ -310,7 +310,15 @@ export default function ProspectOutreach({ profile }: Props) {
                                                                 {prospect.coldEmail}
                                                             </div>
                                                             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                                                                <button className="btn-primary" style={{ fontSize: 11, padding: '5px 14px' }}
+                                                                {prospect.email && (
+                                                                    <a href={`mailto:${prospect.email}?subject=${encodeURIComponent(prospect.emailSubject || '')}&body=${encodeURIComponent((prospect.coldEmail || '') + '\n\n---\nNote: Remember to attach your Resume & Portfolio!')}`}
+                                                                        style={{ textDecoration: 'none' }}>
+                                                                        <button className="btn-primary" style={{ fontSize: 11, padding: '5px 14px', background: 'linear-gradient(135deg, #10B981, #059669)', border: 'none' }}>
+                                                                            🚀 Send Final Email
+                                                                        </button>
+                                                                    </a>
+                                                                )}
+                                                                <button className="btn-secondary" style={{ fontSize: 11, padding: '5px 14px' }}
                                                                     onClick={() => copy(`Subject: ${prospect.emailSubject || ''}\n\n${prospect.coldEmail}`, prospect.id + '_full')}>
                                                                     {copiedId === prospect.id + '_full' ? '✓ Copied!' : '📋 Copy Full Email'}
                                                                 </button>

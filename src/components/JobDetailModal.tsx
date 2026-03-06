@@ -625,10 +625,20 @@ export default function JobDetailModal({ job, profile, onClose, onSave, isSaved,
                                                 <span className="badge badge-blue" style={{ fontSize: 9 }}>Step 1</span>
                                                 <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>📧 Cold Email</span>
                                             </div>
-                                            <button className="btn-secondary" style={{ fontSize: 11, padding: '4px 12px' }}
-                                                onClick={() => copyToClipboard(`Subject: ${outreach.emailSubject}\n\n${outreach.emailBody}`)}>
-                                                📋 Copy Full Email
-                                            </button>
+                                            <div style={{ display: 'flex', gap: 8 }}>
+                                                {contacts?.managers?.find((m: any) => m.email)?.email && (
+                                                    <a href={`mailto:${contacts.managers.find((m: any) => m.email).email}?subject=${encodeURIComponent(outreach.emailSubject)}&body=${encodeURIComponent(outreach.emailBody + '\n\n---\nNote: Remember to attach your Resume & Portfolio!')}`}
+                                                        style={{ textDecoration: 'none' }}>
+                                                        <button className="btn-primary" style={{ fontSize: 11, padding: '4px 12px', background: 'linear-gradient(135deg, #10B981, #059669)', border: 'none' }}>
+                                                            🚀 Send Final Email
+                                                        </button>
+                                                    </a>
+                                                )}
+                                                <button className="btn-secondary" style={{ fontSize: 11, padding: '4px 12px' }}
+                                                    onClick={() => copyToClipboard(`Subject: ${outreach.emailSubject}\n\n${outreach.emailBody}`)}>
+                                                    📋 Copy Full Email
+                                                </button>
+                                            </div>
                                         </div>
                                         <div style={{ padding: '12px 18px' }}>
                                             <div style={{ marginBottom: 10 }}>

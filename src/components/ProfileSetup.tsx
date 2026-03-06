@@ -182,6 +182,7 @@ SQL, Python (Pandas, NumPy), R, Excel, Power BI, Tableau, Business Analysis, Req
     hackathons: ['5x Global Hackathon Winner', 'Hack Arizona 2025 — 1st Place ($600)', 'Multiple International Hackathon Wins'],
     openAIKey: '',
     groqApiKey: '',
+    anthropicApiKey: '',
     aiProvider: 'groq' as const,
     adzunaAppId: '',
     adzunaApiKey: '',
@@ -299,8 +300,9 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>🤖 AI Provider <span style={{ fontSize: 10, color: '#34d399', fontWeight: 500 }}>— pick one</span></div>
                                 <div style={{ display: 'flex', gap: 10 }}>
                                     {[
+                                        { val: 'anthropic', label: '🧠 Claude (Anthropic)', desc: 'claude-3-5-sonnet-20241022 · ~$0.05-0.10/pack', color: '#B391CD' },
                                         { val: 'groq', label: '⚡ Groq (FREE)', desc: '14,400 req/day · Llama 3.3 70B · No cost', color: '#10B981' },
-                                        { val: 'openai', label: '🧠 OpenAI', desc: 'GPT-4o-mini · ~$0.05-0.10/pack', color: '#4F8EF7' },
+                                        { val: 'openai', label: '🤖 OpenAI', desc: 'GPT-4o-mini · ~$0.05-0.10/pack', color: '#4F8EF7' },
                                     ].map(p => (
                                         <button key={p.val}
                                             onClick={() => set('aiProvider', p.val as any)}
@@ -314,6 +316,14 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                                             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.desc}</div>
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="label">Anthropic API Key <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>For Claude 3.5 Sonnet</span></label>
+                                <input className="input" type="password" placeholder="sk-ant-..." value={form.anthropicApiKey || ''} onChange={e => set('anthropicApiKey', e.target.value)} />
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                                    Get yours at <a href="https://console.anthropic.com/" target="_blank" style={{ color: 'var(--accent)' }}>console.anthropic.com</a>
                                 </div>
                             </div>
 

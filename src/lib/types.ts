@@ -18,7 +18,8 @@ export interface UserProfile {
     hackathons: string[];
     openAIKey: string;
     groqApiKey: string;          // Free: console.groq.com — 14,400 req/day
-    aiProvider: 'openai' | 'groq'; // Which provider to use
+    anthropicApiKey: string;     // Claude API Key
+    aiProvider: 'openai' | 'groq' | 'anthropic'; // Which provider to use
     adzunaAppId: string;
     adzunaApiKey: string;
     hunterApiKey: string; // hunter.io - free 25 searches/month

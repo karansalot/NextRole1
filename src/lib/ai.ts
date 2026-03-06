@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
 /**
  * Returns an OpenAI-compatible client for whichever provider the user has configured.
@@ -11,7 +12,7 @@ import OpenAI from 'openai';
 export function getAIClient(opts: {
     openAIKey?: string;
     groqApiKey?: string;
-    aiProvider?: 'openai' | 'groq';
+    aiProvider?: 'openai' | 'groq' | 'anthropic';
 }): { client: OpenAI; model: string; provider: string } {
     const { openAIKey, groqApiKey, aiProvider } = opts;
 
@@ -36,5 +37,19 @@ export function getAIClient(opts: {
         };
     }
 
-    throw new Error('No AI API key configured. Add your OpenAI key or free Groq key in Profile → API Keys.');
+    throw new Error('No AI API key configured. Add your OpenAI, Groq, or Anthropic key in Profile → API Keys.');
+}
+
+/**
+ * Specifically returns an Anthropic client. Used when the user Provider is set to Anthropic.
+ */
+export function getAnthropicClient(apiKey?: string): { client: Anthropic; model: string; provider: string } {
+    if (!apiKey) {
+        throw new Error('No Anthropic API key configured. Add it in Profile → API Keys.');
+    }
+    return {
+        client: new Anthropic({ apiKey }),
+        model: 'claude-3-5-sonnet-20241022',
+        provider: 'anthropic',
+    };
 }
