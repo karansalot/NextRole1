@@ -8,14 +8,184 @@ interface Props {
 }
 
 const BLANK_PROFILE: UserProfile = {
-    name: '', email: '', phone: '', linkedin: '', location: '',
-    visaStatus: 'OPT', targetRoles: ['Business Analyst', 'Product Manager'],
-    targetLocations: ['New York, NY', 'San Francisco, CA', 'Remote'],
-    baseResumeLaTeX: '', baseResumeText: '', summary: '',
-    skills: [], experiences: [], education: [], projects: [],
-    hackathons: ['5x Hackathon Winner'],
-    openAIKey: '', groqApiKey: '', aiProvider: 'groq' as const,
-    adzunaAppId: '', adzunaApiKey: '', hunterApiKey: '',
+    name: 'Karan Salot',
+    email: 'karansalot10@gmail.com',
+    phone: '(520) 270-0459',
+    linkedin: 'linkedin.com/in/karansalot',
+    location: 'Tucson, AZ',
+    visaStatus: 'OPT',
+    targetRoles: ['Business Analyst', 'Product Manager', 'Data Analyst', 'Product Analyst', 'Operations Analyst', 'Program Manager', 'Project Manager', 'Strategy & Operations'],
+    targetLocations: ['New York, NY', 'San Francisco, CA', 'Seattle, WA', 'Chicago, IL', 'Austin, TX', 'Remote'],
+    summary: '5x Global Hackathon Winner and MS MIS candidate at University of Arizona (Dec 2025) with 2+ years of experience in business analysis, data analytics, and product development. Proven track record in requirements gathering, SQL/Python data pipelines, Power BI/Tableau dashboards, and cross-functional stakeholder management. Built ML recommendation engines and AI-powered analytics tools delivering measurable business impact. Seeking OPT-sponsored roles in BA, PM, Data, or Strategy & Operations.',
+    baseResumeLaTeX: '',
+    baseResumeText: `Karan Salot
+5x Global Hackathon Winner
+(520) 270-0459 | karansalot10@gmail.com | LinkedIn | GitHub | Tableau | Portfolio
+
+EDUCATION
+University of Arizona — MS in Management Information Systems | GPA: 3.74 | Dec 2025
+D.J. Sanghvi College of Engineering, University of Mumbai — B.Tech Electronics & Telecom (Honors AI/ML) | GPA: 3.8 | Jun 2024
+
+EXPERIENCE
+Research Analyst, Freedom Center, University of Arizona | Jan 2025 – Dec 2025
+• Stakeholder interviews & requirements analysis for AI-integrated Qualtrics behavioral research platform; 40% increase in participant retention
+• Automated ETL pipelines (Python/SQL) reducing manual processing by 50+ hours/cycle
+• Built Power BI dashboards + research website with Plotly, D3.js; financial analytics app with real-time APIs
+
+Graduate Teaching Assistant, University of Arizona | Jan 2025 – Dec 2025
+• Trained 60+ students in Agile, requirements gathering, SQL optimization, data analysis; 30% improvement in project deliverables
+
+Technology Consultant, University of Arizona | Jan 2025 – May 2025
+• Requirements gathering via stakeholder interviews; gap analysis; 12+ prioritized strategic recommendations
+• Power BI dashboards for campaign performance, ROI, customer acquisition; 15% reduction in operational costs
+
+Business Analyst, MHHC Enterprises | Aug 2024 – Dec 2024
+• Requirements elicitation, JAD sessions, BRDs/FRDs/user stories/traceability matrices
+• ETL workflows integrating CRM/ERP (Python/SQL); Tableau dashboards reducing analysis turnaround by 30%; UAT
+
+Founding Product Analyst, Happy Hunters Travel Agency | Jan 2023 – Aug 2024
+• Product strategy & roadmap; SQL databases + ETL pipelines processing 10,000+ records; 70% reduction in manual ops
+• ML recommendation engine (Python); 57% increase in lead conversion
+• Tableau dashboards for revenue, KPIs, customer acquisition, churn
+
+PROJECTS
+NeuroNexus AI Campus Assistant — Hack Arizona 2025 Winner ($600) | GPT-4, Next.js, AWS
+• Full-stack app with GPT-4 NLP, PostgreSQL, real-time chat, CI/CD on AWS; 40% engagement increase, 85% satisfaction
+
+AI-Powered Customer Support Analysis | TensorFlow, BERT, LangChain, Power BI
+• 10,000+ ticket NLP classification (89% accuracy); reduced critical bugs 22%, response time 35%
+
+Natural Language Analytics Copilot | Python, SQL, LangChain, GPT-4, Snowflake, Streamlit
+• NL-to-SQL tool; 500+ queries at 92% accuracy; 40% reduction in ad-hoc analysis time
+
+SKILLS
+SQL, Python (Pandas, NumPy), R, Excel, Power BI, Tableau, Business Analysis, Requirements Gathering, BRD/FRD, ETL Pipelines, Data Modeling, Agile/Scrum, JIRA, Confluence, Machine Learning, NLP, LangChain, GPT-4, TensorFlow, Product Strategy, User Research, Stakeholder Management, AWS, Azure, Snowflake, A/B Testing, D3.js, React, Next.js`,
+    skills: [
+        'SQL', 'Python', 'Power BI', 'Tableau', 'Business Analysis', 'Requirements Gathering',
+        'BRD/FRD', 'User Stories', 'ETL Pipelines', 'Data Modeling', 'Data Warehousing',
+        'Agile/Scrum', 'JIRA', 'Confluence', 'Product Strategy', 'Product Roadmap',
+        'User Research', 'Stakeholder Management', 'GAP Analysis', 'UAT',
+        'Machine Learning', 'NLP', 'LangChain', 'GPT-4', 'TensorFlow', 'BERT',
+        'A/B Testing', 'Statistical Analysis', 'Predictive Analytics',
+        'Excel', 'R', 'Pandas', 'NumPy', 'Scikit-learn',
+        'AWS', 'Azure', 'Docker', 'Snowflake', 'Apache Spark', 'Airflow',
+        'React', 'Next.js', 'D3.js', 'Plotly', 'Streamlit',
+        'Cross-functional Collaboration', 'KPI Tracking', 'Data Visualization',
+    ],
+    experiences: [
+        {
+            title: 'Research Analyst',
+            company: 'Freedom Center, University of Arizona',
+            location: 'Tucson, AZ',
+            startDate: 'Jan 2025',
+            endDate: 'Dec 2025',
+            bullets: [
+                'Conducted stakeholder interviews and requirements analysis for behavioral research platform integrating Qualtrics with AI systems; analyzed user engagement data delivering actionable insights resulting in 40% increase in participant retention',
+                'Designed automated ETL pipelines using Python and SQL for data collection, cleaning, and transformation; reduced manual processing by 50+ hours per cycle improving data quality',
+                'Built Power BI dashboards and custom research website with interactive data collection forms, participant tracking, and automated workflows; created visualizations using Plotly and D3.js',
+                'Developed financial analytics application with real-time APIs and dashboards; applied statistical modeling and business intelligence for investment decision support',
+            ],
+        },
+        {
+            title: 'Graduate Teaching Assistant',
+            company: 'University of Arizona',
+            location: 'Tucson, AZ',
+            startDate: 'Jan 2025',
+            endDate: 'Dec 2025',
+            bullets: [
+                'Delivered training on Agile methodology, requirements gathering, SQL optimization, and data analysis to 60+ students; mentored project teams resulting in 30% improvement in deliverables',
+                'Developed course materials and analytics applications supporting curriculum; facilitated lab sessions and office hours for 60+ students',
+            ],
+        },
+        {
+            title: 'Technology Consultant',
+            company: 'University of Arizona',
+            location: 'Tucson, AZ',
+            startDate: 'Jan 2025',
+            endDate: 'May 2025',
+            bullets: [
+                'Gathered requirements from marketing stakeholders through interviews and workshops; conducted gap analysis; delivered strategic roadmap with 12+ prioritized recommendations',
+                'Built Power BI dashboards analyzing campaign performance, ROI, and customer acquisition; identified optimization opportunities reducing operational costs by 15%',
+            ],
+        },
+        {
+            title: 'Business Analyst',
+            company: 'MHHC Enterprises',
+            location: 'Olympia, WA (Remote)',
+            startDate: 'Aug 2024',
+            endDate: 'Dec 2024',
+            bullets: [
+                'Performed requirements elicitation for enterprise system integration; facilitated JAD sessions with stakeholders; created BRDs, FRDs, user stories, and traceability matrices',
+                'Developed ETL workflows integrating CRM/ERP data using Python and SQL; designed Tableau dashboards reducing analysis turnaround by 30%; conducted data validation and UAT',
+                'Created ERDs and process flow diagrams; documented business processes and technical specifications; coordinated UAT ensuring solution alignment with requirements',
+            ],
+        },
+        {
+            title: 'Founding Product Analyst',
+            company: 'Happy Hunters Travel Agency',
+            location: 'Mumbai, India',
+            startDate: 'Jan 2023',
+            endDate: 'Aug 2024',
+            bullets: [
+                'Partnered with founders to define product strategy and roadmap; conducted user research and gathered requirements; designed SQL databases and ETL pipelines processing 10,000+ records reducing manual operations by 70%',
+                'Built machine learning recommendation engine using Python and predictive analytics analyzing customer behavior; implemented personalization strategies increasing lead conversion by 57%',
+                'Designed Tableau dashboards tracking revenue, KPIs, customer acquisition, and churn analysis; translated data insights into actionable recommendations for stakeholders',
+            ],
+        },
+    ],
+    education: [
+        {
+            degree: 'Master of Science in Management Information Systems',
+            school: 'University of Arizona',
+            grad: 'Dec 2025',
+            gpa: '3.74',
+        },
+        {
+            degree: 'Bachelor of Technology in Electronics & Telecommunications (Honors in AI & ML)',
+            school: 'D.J. Sanghvi College of Engineering, University of Mumbai',
+            grad: 'Jun 2024',
+            gpa: '3.8',
+        },
+    ],
+    projects: [
+        {
+            name: 'NeuroNexus AI Campus Assistant',
+            description: 'Hack Arizona 2025 Winner ($600) — GPT-4, Python, Next.js, AWS',
+            tech: ['GPT-4', 'Python', 'Next.js', 'React', 'AWS', 'PostgreSQL', 'CI/CD'],
+            bullets: [
+                'Led product strategy and user research with 200+ students; defined MVP scope and full product roadmap',
+                'Built full-stack web application with GPT-4 NLP, real-time chat, authentication, and PostgreSQL; deployed on AWS with CI/CD pipeline',
+                'Achieved 40% engagement increase and 85% satisfaction rate among 200+ student users',
+            ],
+        },
+        {
+            name: 'AI-Powered Customer Support Analysis',
+            description: 'Python, NLP, TensorFlow, BERT, LangChain, Power BI',
+            tech: ['Python', 'TensorFlow', 'BERT', 'LangChain', 'Power BI', 'NLP'],
+            bullets: [
+                'Analyzed 10,000+ support tickets using NLP and machine learning; built automated classification using TensorFlow and BERT',
+                'Implemented sentiment analysis achieving 89% accuracy; developed full ETL pipeline for data processing',
+                'Created Power BI dashboard enabling product team to reduce critical bugs by 22% and response time by 35%',
+            ],
+        },
+        {
+            name: 'Natural Language Analytics Copilot',
+            description: 'Python, SQL, LangChain, GPT-4, Streamlit, Snowflake',
+            tech: ['Python', 'SQL', 'LangChain', 'GPT-4', 'Streamlit', 'Snowflake'],
+            bullets: [
+                'Developed natural language to SQL tool translating business questions into optimized queries; engineered prompt templates',
+                'Integrated with Snowflake data warehouse; built Streamlit interface for self-service analytics across business teams',
+                'Processed 500+ queries with 92% accuracy reducing ad-hoc analysis time by 40%',
+            ],
+        },
+    ],
+    hackathons: ['5x Global Hackathon Winner', 'Hack Arizona 2025 — 1st Place ($600)', 'Multiple International Hackathon Wins'],
+    openAIKey: '',
+    groqApiKey: '',
+    aiProvider: 'groq' as const,
+    adzunaAppId: '',
+    adzunaApiKey: '',
+    hunterApiKey: '',
 };
 
 export default function ProfileSetup({ profile, onSave }: Props) {
