@@ -7,6 +7,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { profile, job, openAIKey } = body;
 
+    // Detect if user has provided LaTeX source
+    const latexResume = profile?.latexResume?.trim() || '';
+    const isLatex = latexResume.startsWith('\\documentclass') || latexResume.startsWith('%') || latexResume.includes('\\begin{document}');
+
     let client: any, model: string, provider: string;
     try {
         if (profile?.aiProvider === 'anthropic') {
@@ -18,40 +22,27 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: e.message }, { status: 400 });
     }
 
-    const systemPrompt = `You are an expert resume writer and career coach specializing in ATS-optimized, 1-page resumes. 
-You create highly tailored resumes that achieve 90%+ keyword match with job descriptions.
-Key rules:
-- NEVER change job titles on actual work experience
-- You MAY add 1-2 bullet points to existing roles if it honestly reflects transferable skills
-- You MUST create 1-2 new projects if needed - these can be fictional but realistic, with numbers that are justifiable in interviews
-- ALL metrics must be realistic and defensible: no "increased revenue by 500%" - think like a BA/analyst (e.g., "reduced report generation time by 64%, saving ~22 analyst-hours/week")
-- Output must be STRICTLY 1 page of content (MAXIMUM 500 words). Be concise in bullet points.
-- Must be ATS-friendly: no tables, no columns, no images, no graphics
-- Use strong action verbs and quantified outcomes
-- Optimize for keywords in the job description
-- Format as clean plain text with standard resume sections`;
+    let systemPrompt: string;
+    let userPrompt: string;
 
-    const userPrompt = `CANDIDATE PROFILE:
-Name: ${profile.name}
-Visa Status: ${profile.visaStatus}
-Email: ${profile.email}
-Phone: ${profile.phone}
-LinkedIn: ${profile.linkedin}
+    if (isLatex) {
+        systemPrompt = `You are an expert resume writer specializing in LaTeX resumes and ATS optimization.
+Your goal is to make MINIMAL, TARGETED edits to a LaTeX resume to match a job description.
 
-WORK EXPERIENCE:
-${profile.experiences?.map((e: any) => `${e.title} at ${e.company} (${e.startDate} - ${e.endDate})\n${e.bullets.join('\n')}`).join('\n\n')}
+STRICT RULES:
+- Return ONLY valid LaTeX code — the full modified .tex file
+- Do NOT change job titles, companies, or dates
+- Do NOT add fake experiences — only add/adjust bullets to existing roles using real-sounding language
+- DO weave in exact keywords and phrases from the JD naturally into existing bullets
+- DO reorder skills to put the most JD-relevant ones first
+- Keep the resume to 1 page — if adding content, compress or cut less-relevant bullets
+- Preserve ALL original LaTeX formatting, commands, and structure exactly — only change text content
+- Output ONLY the complete .tex file, no explanation, no markdown fences`;
 
-EDUCATION:
-${profile.education?.map((e: any) => `${e.degree} - ${e.school} (${e.grad})`).join('\n')}
-
-PROJECTS:
-${profile.projects?.map((p: any) => `${p.name}: ${p.bullets.join('. ')}`).join('\n')}
-
-SKILLS: ${profile.skills?.join(', ')}
-
-HACKATHONS/ACHIEVEMENTS: ${profile.hackathons?.join(', ')}
-
----
+        userPrompt = `MY LATEX RESUME:
+\`\`\`latex
+${latexResume}
+\`\`\`
 
 JOB DESCRIPTION:
 Company: ${job.company}
@@ -60,42 +51,61 @@ Location: ${job.location}
 
 ${job.description}
 
+TASK:
+1. Identify the top 10-15 keywords/phrases from the JD (tools, skills, methodologies, soft skills)
+2. Weave those exact keywords into existing bullets wherever they genuinely fit — do NOT stuff keywords unnaturally
+3. Adjust the professional summary (if present) to mirror the JD's language
+4. Reorder the skills section so JD-relevant skills appear first
+5. Keep every existing job title, company, and date UNCHANGED
+6. Ensure the result fits on 1 page (compress/remove less-relevant bullets if needed)
+7. Return the COMPLETE modified .tex file — nothing else`;
+    } else {
+        // Plain text mode (fallback)
+        systemPrompt = `You are an expert resume writer specializing in ATS-optimized resumes.
+Key rules:
+- NEVER change job titles on actual work experience
+- Use exact keywords and phrases from the job description — do NOT paraphrase them
+- Add 1-2 bullets to existing roles only where genuinely transferable
+- You may add 1 realistic project if needed — use defensible metrics
+- Output must be STRICTLY 1 page (max 450 words). Be concise.
+- ATS-friendly: plain text, no tables, no columns
+- Use strong action verbs, quantified outcomes`;
+
+        userPrompt = `CANDIDATE PROFILE:
+Name: ${profile.name}
+Visa Status: ${profile.visaStatus}
+Email: ${profile.email}
+Phone: ${profile.phone}
+LinkedIn: ${profile.linkedin}
+
+WORK EXPERIENCE:
+${profile.experiences?.map((e: any) => `${e.title} at ${e.company} (${e.startDate} - ${e.endDate})\n${e.bullets?.join('\n')}`).join('\n\n')}
+
+EDUCATION:
+${profile.education?.map((e: any) => `${e.degree} - ${e.school} (${e.grad})`).join('\n')}
+
+PROJECTS:
+${profile.projects?.map((p: any) => `${p.name}: ${p.bullets?.join('. ')}`).join('\n')}
+
+SKILLS: ${profile.skills?.join(', ')}
+HACKATHONS/ACHIEVEMENTS: ${profile.hackathons?.join(', ')}
+
 ---
+JOB DESCRIPTION:
+Company: ${job.company}
+Title: ${job.title}
+${job.description}
 
+---
 INSTRUCTIONS:
-1. Tailor this resume to achieve 90%+ keyword match with the above job description
-2. Keep all existing job titles EXACTLY as-is
-3. Add 1-2 bullet points to existing roles where you can honestly connect to this role's requirements
-4. Create 1-2 NEW projects that are highly relevant to THIS specific role (realistic, defensible metrics)
-5. For hackathon wins - highlight them in a way that connects to THIS role's value
-6. Reorder skills to put most relevant ones first
-7. Output format: Plain text resume optimized for ATS
-8. STRICT LENGTH: Maximum 500 words. Keep it strictly to 1-page length. Do not ramble.
+1. Identify every key phrase/tool/methodology in the JD — use them verbatim in the resume where they fit
+2. Keep all job titles EXACTLY as-is
+3. Add bullets to existing roles using JD language — make them sound natural
+4. Reorder skills so JD-relevant ones are first
+5. Max 450 words. 1 page only.
 
-Output ONLY the resume content in this format:
-[CANDIDATE NAME]
-[Phone] | [Email] | [LinkedIn] | [Location]
-
-PROFESSIONAL SUMMARY
-[2-3 sentence targeted summary]
-
-WORK EXPERIENCE
-[Company] | [Title] | [Date Range]  
-• [bullet]
-• [bullet]
-
-PROJECTS
-[Project Name] | [Tech Stack]
-• [bullet]
-
-EDUCATION
-[Degree] | [School] | [Year]
-
-SKILLS
-[Grouped skills]
-
-ACHIEVEMENTS
-[Hackathon wins and other achievements]`;
+Return ONLY the resume content in clean plain text format.`;
+    }
 
     try {
         let resumeText = '';
@@ -105,8 +115,8 @@ ACHIEVEMENTS
                 model,
                 system: systemPrompt,
                 messages: [{ role: 'user', content: userPrompt }],
-                max_tokens: 2000,
-                temperature: 0.4,
+                max_tokens: 3000,
+                temperature: 0.3,
             });
             resumeText = response.content[0].text;
         } else {
@@ -116,14 +126,18 @@ ACHIEVEMENTS
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.4,
-                max_tokens: 2000,
+                temperature: 0.3,
+                max_tokens: 3000,
             });
             resumeText = response.choices[0].message.content || '';
         }
 
-        const filename = `resume_${job.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
-        return NextResponse.json({ resume: resumeText, filename, provider });
+        // Strip any markdown code fences if AI wrapped it
+        resumeText = resumeText.replace(/^```latex\n?/i, '').replace(/^```\n?/i, '').replace(/\n?```$/, '').trim();
+
+        const ext = isLatex ? 'tex' : 'txt';
+        const filename = `resume_${job.company.replace(/[^a-z0-9]/gi, '_')}_${job.title.replace(/[^a-z0-9]/gi, '_')}.${ext}`;
+        return NextResponse.json({ resume: resumeText, filename, provider, isLatex });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || String(error) }, { status: 500 });
     }

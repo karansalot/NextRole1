@@ -4,11 +4,12 @@ import JobDiscovery from '@/components/JobDiscovery';
 import ApplicationTracker from '@/components/ApplicationTracker';
 import ProfileSetup from '@/components/ProfileSetup';
 import BatchApply from '@/components/BatchApply';
+import BatchJD from '@/components/BatchJD';
 import HiringProspector from '@/components/HiringProspector';
 import ProspectOutreach from '@/components/ProspectOutreach';
 import { Application, Job, UserProfile } from '@/lib/types';
 
-type Tab = 'discover' | 'tracker' | 'batch' | 'prospector' | 'outreach' | 'profile';
+type Tab = 'discover' | 'batchjd' | 'tracker' | 'batch' | 'prospector' | 'outreach' | 'profile';
 
 const LS_PROFILE = 'nextrole_profile';
 const LS_APPS = 'nextrole_applications';
@@ -68,6 +69,7 @@ export default function HomePage() {
 
   const navItems: { key: Tab; label: string; icon: string; badge?: number }[] = [
     { key: 'discover', label: 'Discover Jobs', icon: '🔍' },
+    { key: 'batchjd', label: 'Batch JD → Resume', icon: '⚡', badge: undefined },
     { key: 'tracker', label: 'Application Tracker', icon: '📋', badge: applications.filter(a => ['applied', 'interview'].includes(a.status)).length || undefined },
     { key: 'batch', label: 'Batch Apply', icon: '⚡', badge: savedJobs.length || undefined },
     { key: 'prospector', label: 'Hiring Manager Finder', icon: '🎯' },
@@ -194,6 +196,9 @@ export default function HomePage() {
           </div>
         )}
 
+        {activeTab === 'batchjd' && (
+          <BatchJD profile={profile} />
+        )}
         {activeTab === 'discover' && (
           <JobDiscovery
             profile={profile}

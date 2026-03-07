@@ -44,7 +44,7 @@ const PLATFORMS = [
     },
     {
         name: 'Stamplist', icon: '🛂', color: '#8B5CF6', badge: 'H1B',
-        url: (_kw: string) => `https://stamplist.com/`,
+        url: (_kw: string) => `https://landing.club/stamplist`,
         desc: 'Jobs with visa sponsorship only',
     },
     {
@@ -53,8 +53,8 @@ const PLATFORMS = [
         desc: '100+ startups hiring new grads',
     },
     {
-        name: "Brian's List", icon: '📋', color: '#F59E0B', badge: 'Free',
-        url: (_kw: string) => `https://brianstarter.com/`,
+        name: "Brian's Job Search", icon: '📋', color: '#F59E0B', badge: 'Free',
+        url: (_kw: string) => `https://briansjobsearch.com`,
         desc: 'Curated entry-level roles',
     },
     {
@@ -69,7 +69,7 @@ const PLATFORMS = [
     },
     {
         name: 'Venture Loop', icon: '🔄', color: '#06B6D4', badge: 'VC-Backed',
-        url: (_kw: string) => `https://www.ventureloop.com/ventureloop/job_listing.php`,
+        url: (_kw: string) => `https://www.ventureloop.com/ventureloop/home.php`,
         desc: 'VC-backed startup jobs',
     },
     {

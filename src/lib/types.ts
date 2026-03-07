@@ -9,6 +9,7 @@ export interface UserProfile {
     targetRoles: string[];
     targetLocations: string[];
     baseResumeLaTeX: string;
+    latexResume: string;       // Active LaTeX resume used for tailoring
     baseResumeText: string;
     summary: string;
     skills: string[];

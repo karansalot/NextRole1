@@ -18,6 +18,7 @@ const BLANK_PROFILE: UserProfile = {
     targetLocations: ['New York, NY', 'San Francisco, CA', 'Seattle, WA', 'Chicago, IL', 'Austin, TX', 'Remote'],
     summary: '5x Global Hackathon Winner and MS MIS candidate at University of Arizona (Dec 2025) with 2+ years of experience in business analysis, data analytics, and product development. Proven track record in requirements gathering, SQL/Python data pipelines, Power BI/Tableau dashboards, and cross-functional stakeholder management. Built ML recommendation engines and AI-powered analytics tools delivering measurable business impact. Seeking OPT-sponsored roles in BA, PM, Data, or Strategy & Operations.',
     baseResumeLaTeX: '',
+    latexResume: '',
     baseResumeText: `Karan Salot
 5x Global Hackathon Winner
 (520) 270-0459 | karansalot10@gmail.com | LinkedIn | GitHub | Tableau | Portfolio
@@ -368,18 +369,50 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                     {/* Base Resume */}
                     {activeSection === 'resume' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Base Resume</h2>
                             <div>
-                                <label className="label">Paste Your Resume Text (used as base for AI tailoring)</label>
-                                <textarea className="textarea" rows={18}
-                                    placeholder="Paste your current resume text here. This will be the base that GPT-4o tailors for each job application..."
-                                    value={form.baseResumeText} onChange={e => set('baseResumeText', e.target.value)} />
-                                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>
-                                    The more complete this is, the better the AI tailoring. Include all bullet points, projects, and achievements.
+                                <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Resume</h2>
+                                <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                                    Paste your LaTeX resume source code — the AI will make <strong>minimal targeted edits</strong> to it for each JD and give you back a modified <code>.tex</code> file.
+                                </p>
+                            </div>
+
+                            {/* LaTeX Resume — PRIMARY */}
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                    <label className="label" style={{ margin: 0 }}>LaTeX Resume Source Code</label>
+                                    <span style={{
+                                        fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                                        background: 'rgba(16,185,129,0.15)', color: '#34d399',
+                                    }}>✅ RECOMMENDED</span>
                                 </div>
+                                <textarea className="textarea"
+                                    rows={20}
+                                    style={{ fontFamily: 'monospace', fontSize: 11.5, lineHeight: 1.5 }}
+                                    placeholder={`\\documentclass[letterpaper,11pt]{article}\n\\begin{document}\n\n% Paste your full LaTeX resume here\n% The AI will modify bullet points to match each JD\n% and return a ready-to-compile .tex file\n\n\\end{document}`}
+                                    value={form.latexResume || form.baseResumeLaTeX || ''}
+                                    onChange={e => { set('latexResume', e.target.value); set('baseResumeLaTeX', e.target.value); }}
+                                />
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>
+                                    Paste your complete <code>.tex</code> file. The AI makes keyword-matched edits to existing bullets only — it won't change job titles, companies, or dates. Compile with Overleaf or any LaTeX editor.
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>or plain text fallback (if no LaTeX)</span>
+                                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                            </div>
+
+                            {/* Plain text fallback */}
+                            <div>
+                                <label className="label">Plain Text Resume (fallback — used if no LaTeX above)</label>
+                                <textarea className="textarea" rows={10}
+                                    placeholder="Paste your resume as plain text here as a fallback..."
+                                    value={form.baseResumeText} onChange={e => set('baseResumeText', e.target.value)} />
                             </div>
                         </div>
                     )}
+
 
                     {/* Experience */}
                     {activeSection === 'experience' && (
