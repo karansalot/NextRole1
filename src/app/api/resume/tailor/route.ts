@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAIClient, getAnthropicClient } from '@/lib/ai';
-import { saveGeneratedDoc } from '@/lib/storage';
 
 export const maxDuration = 60;
 
@@ -123,15 +122,7 @@ ACHIEVEMENTS
             resumeText = response.choices[0].message.content || '';
         }
 
-        // Save to disk
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const filename = `resume_${job.title.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.txt`;
-        try {
-            saveGeneratedDoc('resume', job.company, filename, resumeText);
-        } catch (e) {
-            console.error('Could not save to disk', e);
-        }
-
+        const filename = `resume_${job.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
         return NextResponse.json({ resume: resumeText, filename, provider });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || String(error) }, { status: 500 });

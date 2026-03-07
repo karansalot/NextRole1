@@ -40,20 +40,31 @@ export default function ProspectOutreach({ profile }: Props) {
     const [selectedTitles, setSelectedTitles] = useState<string[]>(['CEO / Founder', 'CTO / VP Engineering', 'VP Product']);
     const [count, setCount] = useState(10);
 
-    useEffect(() => { loadProspects(); }, []);
+    const LS_KEY = 'nextrole_prospects';
 
-    const loadProspects = async () => {
-        setLoadingProspects(true);
+    useEffect(() => {
         try {
-            const res = await fetch('/api/prospects');
-            const data = await res.json();
-            setProspects(Array.isArray(data) ? data : []);
+            const raw = localStorage.getItem(LS_KEY);
+            setProspects(raw ? JSON.parse(raw) : []);
         } catch { setProspects([]); }
-        finally { setLoadingProspects(false); }
+        setLoadingProspects(false);
+    }, []);
+
+    const saveProspectsToLS = (updated: Prospect[]) => {
+        localStorage.setItem(LS_KEY, JSON.stringify(updated));
+        setProspects(updated);
+    };
+
+    const loadProspects = () => {
+        try {
+            const raw = localStorage.getItem(LS_KEY);
+            return raw ? JSON.parse(raw) as Prospect[] : [];
+        } catch { return []; }
     };
 
     const search = async () => {
-        if (!profile?.openAIKey) { setError('Add your OpenAI API key in Profile settings'); return; }
+        const hasKey = !!(profile?.openAIKey || profile?.groqApiKey || profile?.anthropicApiKey);
+        if (!hasKey) { setError('Add a Groq (free), Claude, or OpenAI API key in Profile → API Keys'); return; }
         setLoading(true); setError('');
         try {
             const res = await fetch('/api/prospects', {
@@ -61,7 +72,10 @@ export default function ProspectOutreach({ profile }: Props) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     openAIKey: profile.openAIKey,
+                    groqApiKey: profile.groqApiKey,
+                    anthropicApiKey: profile.anthropicApiKey,
                     hunterApiKey: profile.hunterApiKey || '',
+                    aiProvider: profile.aiProvider,
                     industry,
                     companyStage: stage,
                     targetTitles: selectedTitles.map(t => t.split(' / ')[0]),
@@ -73,26 +87,28 @@ export default function ProspectOutreach({ profile }: Props) {
             const data = await res.json();
             if (data.error) throw new Error(data.error);
 
-            await loadProspects();
+            // Merge into localStorage (deduplicate by company+name)
+            const existing = loadProspects();
+            const incoming: Prospect[] = data.prospects || [];
+            const merged = [...existing];
+            for (const np of incoming) {
+                const dup = merged.find(e => e.company === np.company && e.name === np.name);
+                if (!dup) merged.push(np);
+            }
+            saveProspectsToLS(merged);
             setView('list');
         } catch (e: any) { setError(e.message); }
         finally { setLoading(false); }
     };
 
-    const updateStatus = async (id: string, status: string) => {
-        await fetch('/api/prospects', {
-            method: 'PUT', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, updates: { status } }),
-        });
-        setProspects(prev => prev.map(p => p.id === id ? { ...p, status: status as any } : p));
+    const updateStatus = (id: string, status: string) => {
+        const updated = loadProspects().map((p: Prospect) => p.id === id ? { ...p, status: status as any } : p);
+        saveProspectsToLS(updated);
     };
 
-    const deleteProspect = async (id: string) => {
-        await fetch('/api/prospects', {
-            method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id }),
-        });
-        setProspects(prev => prev.filter(p => p.id !== id));
+    const deleteProspect = (id: string) => {
+        const updated = loadProspects().filter((p: Prospect) => p.id !== id);
+        saveProspectsToLS(updated);
     };
 
     const copy = (text: string, id: string) => {

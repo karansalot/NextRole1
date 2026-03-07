@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAIClient, getAnthropicClient } from '@/lib/ai';
-import { saveGeneratedDoc } from '@/lib/storage';
 
 export const maxDuration = 60;
 
@@ -69,13 +68,6 @@ Be specific to this company and role. Reference something real about the company
         if (content.endsWith('```')) content = content.replace(/\n```/g, '');
 
         const messages = JSON.parse(content || '{}');
-
-        // Save to disk
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const filename = `outreach_${job.company.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.json`;
-        try {
-            saveGeneratedDoc('outreach', job.company, filename, JSON.stringify(messages, null, 2));
-        } catch (e) { }
 
         return NextResponse.json(messages);
     } catch (error: any) {

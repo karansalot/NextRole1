@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAIClient, getAnthropicClient } from '@/lib/ai';
-import { saveGeneratedDoc } from '@/lib/storage';
 
 export const maxDuration = 60;
 
@@ -105,15 +104,7 @@ ${profile.name}`;
             letter = response.choices[0].message.content || '';
         }
 
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const filename = `cover_letter_${job.company.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.txt`;
-        try {
-            saveGeneratedDoc('cover_letter', job.company, filename, letter);
-        } catch (e) {
-            console.error('Could not save to disk', e);
-        }
-
-        return NextResponse.json({ letter, filename });
+        return NextResponse.json({ letter, filename: `cover_letter_${job.company.replace(/[^a-z0-9]/gi, '_')}.txt` });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || String(error) }, { status: 500 });
     }

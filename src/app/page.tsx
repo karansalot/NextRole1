@@ -10,6 +10,22 @@ import { Application, Job, UserProfile } from '@/lib/types';
 
 type Tab = 'discover' | 'tracker' | 'batch' | 'prospector' | 'outreach' | 'profile';
 
+const LS_PROFILE = 'nextrole_profile';
+const LS_APPS = 'nextrole_applications';
+
+function loadFromLS<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
+
+function saveToLS(key: string, value: any) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<Tab>('discover');
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -17,50 +33,42 @@ export default function HomePage() {
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
+  // Load from localStorage on mount
   useEffect(() => {
-    fetch('/api/profile').then(r => r.json()).then(p => {
-      if (p && p.name) setProfile(p);
-      setProfileLoaded(true);
-    });
-    fetch('/api/applications').then(r => r.json()).then(a => {
-      if (Array.isArray(a)) setApplications(a);
-    });
+    const p = loadFromLS<UserProfile | null>(LS_PROFILE, null);
+    const a = loadFromLS<Application[]>(LS_APPS, []);
+    if (p && p.name) setProfile(p);
+    setApplications(a);
+    setProfileLoaded(true);
   }, []);
 
-  const saveApp = useCallback(async (app: Application) => {
-    await fetch('/api/applications', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(app),
-    });
+  const saveApp = useCallback((app: Application) => {
     setApplications(prev => {
       const idx = prev.findIndex(a => a.id === app.id);
-      if (idx >= 0) { const n = [...prev]; n[idx] = app; return n; }
-      return [app, ...prev];
+      const updated = idx >= 0
+        ? prev.map(a => a.id === app.id ? app : a)
+        : [app, ...prev];
+      saveToLS(LS_APPS, updated);
+      return updated;
     });
   }, []);
 
-  const updateApp = useCallback(async (id: string, updates: Partial<Application>) => {
-    setApplications(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
-    await fetch('/api/applications', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, ...updates }),
+  const updateApp = useCallback((id: string, updates: Partial<Application>) => {
+    setApplications(prev => {
+      const updated = prev.map(a => a.id === id ? { ...a, ...updates } : a);
+      saveToLS(LS_APPS, updated);
+      return updated;
     });
   }, []);
 
-  const saveProfile = useCallback(async (p: UserProfile) => {
+  const saveProfile = useCallback((p: UserProfile) => {
     setProfile(p);
-    await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(p),
-    });
+    saveToLS(LS_PROFILE, p);
   }, []);
 
   const navItems: { key: Tab; label: string; icon: string; badge?: number }[] = [
     { key: 'discover', label: 'Discover Jobs', icon: '🔍' },
-    { key: 'tracker', label: 'Application Tracker', icon: '📋', badge: applications.filter(a => ['applied', 'interview'].includes(a.status)).length },
+    { key: 'tracker', label: 'Application Tracker', icon: '📋', badge: applications.filter(a => ['applied', 'interview'].includes(a.status)).length || undefined },
     { key: 'batch', label: 'Batch Apply', icon: '⚡', badge: savedJobs.length || undefined },
     { key: 'prospector', label: 'Hiring Manager Finder', icon: '🎯' },
     { key: 'outreach', label: 'Proactive Outreach', icon: '🚀' },
@@ -74,9 +82,7 @@ export default function HomePage() {
     offers: applications.filter(a => a.status === 'offer').length,
   };
 
-  if (profileLoaded && !profile?.name && activeTab !== 'profile') {
-    // Show onboarding nudge
-  }
+  const hasKey = !!(profile?.openAIKey || profile?.groqApiKey || profile?.anthropicApiKey);
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -145,19 +151,23 @@ export default function HomePage() {
 
         {/* Bottom */}
         <div style={{ marginTop: 'auto', padding: '16px 14px 0', borderTop: '1px solid var(--border)' }}>
-          {!profile?.openAIKey && (
+          {!hasKey && (
             <div style={{
               background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
               borderRadius: 10, padding: '10px 12px', marginBottom: 8
             }}>
               <div style={{ fontSize: 11, color: '#fbbf24', fontWeight: 600, marginBottom: 2 }}>⚠ Add API Keys</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                OpenAI key required for AI features. Add in Profile settings.
+                Add Groq (free), Claude, or OpenAI key in Profile → API Keys to enable AI features.
               </div>
+              <button className="btn-ghost" style={{ fontSize: 10, color: 'var(--accent)', marginTop: 4, padding: '2px 0' }}
+                onClick={() => setActiveTab('profile')}>
+                Set Up Now →
+              </button>
             </div>
           )}
           <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
-            All data stored locally<br />100% private on your Mac
+            Data stored in your browser only<br />100% private · Never sent to servers
           </div>
         </div>
       </aside>
@@ -174,7 +184,7 @@ export default function HomePage() {
             <span style={{ fontSize: 20 }}>👋</span>
             <div style={{ flex: 1 }}>
               <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>
-                Welcome! Set up your profile first to enable AI features.{' '}
+                Welcome to NextRole! Set up your profile to enable AI resume tailoring, cover letters & outreach.{' '}
               </span>
               <button className="btn-ghost" style={{ fontSize: 12, padding: '2px 10px', color: 'var(--accent)' }}
                 onClick={() => setActiveTab('profile')}>
